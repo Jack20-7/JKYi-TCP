@@ -938,7 +938,7 @@ void j_tcp_handle_established(j_tcp_manager* tcp,uint32_t cur_ts,
             cur_stream->rcv_nxt++;
             j_tcp_addto_controllist(tcp,cur_stream);
             //Read Event
-            j_trace_tcp("j_tcp_flush_read_event\n");
+            //j_trace_tcp("j_tcp_flush_read_event\n");
 #if J_ENABLE_EPOLL_RB
             if(tcp->ep){
                 epoll_event_callback(tcp->ep,cur_stream->s->id,J_EPOLLIN);
@@ -995,6 +995,7 @@ void j_tcp_handle_last_ack(j_tcp_manager* tcp,uint32_t cur_ts,const struct iphdr
         }
         if(ack_seq == cur_stream->snd->fss + 1){
             cur_stream->snd->snd_una++;
+            //更新重传定时器
             UpdateRetransmissionTimer(tcp,cur_stream,cur_ts);
 
             cur_stream->state = J_TCP_CLOSED;

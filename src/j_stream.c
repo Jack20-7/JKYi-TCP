@@ -342,8 +342,8 @@ void DestroyTcpStream(j_tcp_manager* tcp,j_tcp_stream* stream){
 
     tcp->flow_cnt--;
 
-    j_mempool_free(tcp->rcv,stream->rcv->recvbuf);
-    j_mempool_free(tcp->snd,stream->snd->sndbuf);
+    j_mempool_free(tcp->rcv,stream->rcv);
+    j_mempool_free(tcp->snd,stream->snd);
     j_mempool_free(tcp->flow,stream);
 
     pthread_mutex_unlock(&tcp->ctx->flow_pool_lock);

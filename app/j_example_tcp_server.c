@@ -51,6 +51,7 @@ int main(int argc,char** argv){
         int ret = j_recv(clientfd,buffer,BUFFER_LENGTH,0);
         if(ret < 0){
             printf("Errno = %d\n",errno);
+            break;
         }else if(ret == 0){
             printf("Disconnect \n");
             break;
@@ -59,6 +60,8 @@ int main(int argc,char** argv){
         printf("recv :%s\n",buffer);
     }
     printf("Exit\n");
+    j_close(clientfd);
+    usleep(500);
     return 0;
 
 }
