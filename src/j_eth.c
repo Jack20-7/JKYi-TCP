@@ -100,9 +100,9 @@ static void* j_tcp_run(void* arg){
         uint32_t ts = TIMEVAL_TO_TS(&cur_ts);
         if(tcp->flow_cnt > 0){
             //对三个定时队列进行处理
-            CheckRtmTimeout(tcp,ts,J_MAX_CONCURRENCY);
-            CheckTimewaitExpire(tcp,ts,J_MAX_CONCURRENCY);
-            CheckConnectionTimeout(tcp,ts,J_MAX_CONCURRENCY);
+            CheckRtmTimeout(tcp,ts,J_MAX_CONCURRENCY); //检查重传队列
+            CheckTimewaitExpire(tcp,ts,J_MAX_CONCURRENCY); //检查timewait队列
+            CheckConnectionTimeout(tcp,ts,J_MAX_CONCURRENCY); //检查timeout队列
             
             //对tcp manager中各个queue中的stream进行处理
             j_tcp_handle_apicall(ts);

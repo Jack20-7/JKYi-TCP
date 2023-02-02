@@ -946,6 +946,7 @@ void j_tcp_handle_established(j_tcp_manager* tcp,uint32_t cur_ts,
             j_trace_tcp("epoll event_call:%d\n",cur_stream->socket->opts);
 #endif
             if(cur_stream->socket && !(cur_stream->socket->opts & J_TCP_NONBLOCK)){
+                //主要就是唤醒j_rcv.返回0
                 j_tcp_flush_read_event(cur_stream->rcv);
             }
         }else{
@@ -1031,6 +1032,7 @@ void j_tcp_handle_fin_wait_1(j_tcp_manager* tcp,uint32_t cur_ts,
 
     if(tcph->ack){
         if(cur_stream->snd->sndbuf){
+            //对sndbuf中的数据进行确认
             j_tcp_process_ack(tcp,cur_stream,cur_ts,tcph,seq,ack_seq,window,payloadlen);
         }
 
@@ -1070,6 +1072,8 @@ void j_tcp_handle_fin_wait_1(j_tcp_manager* tcp,uint32_t cur_ts,
                 cur_stream->state = J_TCP_CLOSING;
                 j_trace_tcp("Stream %d: TCP_ST_CLOSING\n",cur_stream->id);
             }else if(cur_stream->state == J_TCP_FIN_WAIT_2){
+                //这里感觉不太可能会进入到，所在的这个函数只有tcp stream在fin wait1的状态下才会被调用到
+                //所以这里的fin wait2状态是不可能的
                 cur_stream->state = J_TCP_TIMEWAIT;
                 j_trace_tcp("Stream %d:TCP_ST_TIME_WAIT\n",cur_stream->id);
                 AddtoTimewaitList(tcp,cur_stream,cur_ts);

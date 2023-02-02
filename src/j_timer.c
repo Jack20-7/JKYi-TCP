@@ -388,10 +388,13 @@ void CheckConnectionTimeout(j_tcp_manager* tcp,uint32_t cur_ts,int thresh){
 
         next = TAILQ_NEXT(walk,snd->timeout_link);
         if((int32_t)(cur_ts - walk->last_active_ts) >= (J_TCP_TIMEOUT * 1000)){
+            j_trace_timer("Stream %d time out!\n",walk->id);
             walk->on_timeout_list = 0;
             TAILQ_REMOVE(&tcp->timeout_list,walk,snd->timeout_link);
             tcp->timeout_list_cnt--;
 
+            //按道理来讲，这里不应该直接close掉，而是应该启动保活机制.
+            //但是该协议栈没有实现保活机制
             walk->state = J_TCP_CLOSED;
             walk->close_reason = TCP_TIMEOUT;
             if(walk->socket){

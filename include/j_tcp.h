@@ -280,7 +280,7 @@ typedef struct _j_tcp_stream{
     uint8_t on_timewait_list;
 
     uint8_t ht_idx;
-    uint8_t closed;
+    uint8_t closed;       //是否调用j_closed进行关闭
     uint8_t is_bound_addr;  //是否绑定了地址
     uint8_t need_wnd_adv;   //window == 0时，需要将它设置为1
 
@@ -302,6 +302,10 @@ typedef struct _j_tcp_stream{
     j_tcp_send* snd;
     uint32_t snd_nxt;   //要发送的数据包的序列号
     uint32_t rcv_nxt;   //期待收到的数据包的序列号
+
+    //解决j_close的bug
+    pthread_cond_t closed_cond;
+    pthread_mutex_t closed_mutex;
 }j_tcp_stream;
 
 typedef struct _j_sender{
@@ -351,7 +355,7 @@ typedef struct _j_tcp_manager{
     struct _j_socket_map* smap;
     TAILQ_HEAD(,_j_socket_map) free_smap;
 
-    struct _j_addr_pool* ap;
+    struct _j_addr_pool* ap; //地址池,可以用来对使用过的地址进行缓存
     uint32_t gid;           //设置创建的stream的id
     uint32_t flow_cnt;     //tcp_flow_table上存放的stream的个数
 

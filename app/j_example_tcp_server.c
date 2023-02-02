@@ -61,7 +61,7 @@ int main(int argc,char** argv){
     }
     printf("Exit\n");
     j_close(clientfd);
-    usleep(500);
+    //usleep(500);
     return 0;
 
 }

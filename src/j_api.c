@@ -150,6 +150,8 @@ static int j_close_stream_socket(int sockid){
         errno = EAGAIN;
         return -1;
     }
+    pthread_mutex_lock(&cur_stream->closed_mutex);
+    pthread_cond_wait(&cur_stream->closed_cond,&cur_stream->closed_mutex);
     return 0;
 }
 

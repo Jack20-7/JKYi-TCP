@@ -75,8 +75,8 @@ typedef struct _j_rb_frag_queue{
 }j_rb_frag_queue;
 
 typedef struct _j_fragment_ctx{
-    uint32_t seq;
-    uint32_t len:31,
+    uint32_t seq;     //这个frag的起始序列号
+    uint32_t len:31,  //这个frag的长度
              is_calloc:1;  //是自己分配的还是从内存池中拿取的
     struct _j_fragment_ctx* next;
 }j_fragment_ctx;
@@ -98,7 +98,7 @@ typedef struct _j_ring_buffer{
     uint32_t head_seq;
     uint32_t init_seq;
 
-    j_fragment_ctx* fctx;
+    j_fragment_ctx* fctx;  //为了解决连续连续问题而引入的
 }j_ring_buffer;
 
 typedef struct _j_rb_manager{

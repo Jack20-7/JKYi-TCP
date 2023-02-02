@@ -225,6 +225,7 @@ j_tcp_stream* CreateTcpStream(j_tcp_manager* tcp,struct _j_socket_map* socket,in
     stream->rcv->snd_wl1 = stream->rcv->irs - 1;
 
     stream->snd->rto = TCP_INITIAL_RTO;
+    stream->closed = 0;
 
 #if J_ENABLE_BLOCKING
     if(pthread_mutex_init(&stream->rcv->read_lock,NULL)){
@@ -257,6 +258,15 @@ j_tcp_stream* CreateTcpStream(j_tcp_manager* tcp,struct _j_socket_map* socket,in
         return NULL;
     }
 #endif
+
+    if(pthread_cond_init(&stream->closed_cond,NULL)){
+        perror("pthread_cond_init if closed_cond");
+        return NULL;
+    }
+    if(pthread_mutex_init(&stream->closed_mutex,NULL)){
+        perror("pthread_mutex_init of closed_mutex");
+        return NULL;
+    }
 
     uint8_t* sa = (uint8_t*)&stream->saddr;
     uint8_t* da = (uint8_t*)&stream->daddr;
@@ -324,6 +334,7 @@ void DestroyTcpStream(j_tcp_manager* tcp,j_tcp_stream* stream){
     SBUF_LOCK_DESTROY(&stream->snd->write_lock);
 #endif
 
+    
     assert(stream->on_hash_table == 1);
 
     if(stream->snd->sndbuf){
@@ -342,12 +353,20 @@ void DestroyTcpStream(j_tcp_manager* tcp,j_tcp_stream* stream){
 
     tcp->flow_cnt--;
 
+    if(stream->closed){
+        pthread_cond_signal(&stream->closed_cond);
+    }
+    pthread_mutex_destroy(&stream->closed_mutex);
+    pthread_cond_destroy(&stream->closed_cond);
+
     j_mempool_free(tcp->rcv,stream->rcv);
     j_mempool_free(tcp->snd,stream->snd);
     j_mempool_free(tcp->flow,stream);
 
+    
     pthread_mutex_unlock(&tcp->ctx->flow_pool_lock);
 
+    //对该连接的地址进行缓存
     int ret = -1;
     if(bound_addr){
         if(tcp->ap){
